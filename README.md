@@ -20,7 +20,7 @@ In this repository, we wii add programs used in RasPi.
 [TeruakiHayashi](https://github.com/TeruakiHayashi)
 [astro-hiro](https://github.com/astro-hiro)
 [NakatsukaYuki](https://github.com/NakatsukaYuki)
-[Tsuyoshi](https://github.com/Tsuyoshi)
+[tsuyoshi-nakashima](https://github.com/tsuyoshi-nakashima)
 
 ## Language
 C++
