@@ -6,7 +6,7 @@
 #include <stdio.h>
 
 Sensor sensor;
-
+int i=0;
 int main()
 {
 	float GPSData[2];
@@ -14,7 +14,11 @@ int main()
     while(1) 
     {
 		sensor.GPSGetData(GPSData);
-        printf("I'm at %f, %f\n", GPSData[0],GPSData[1] );
+        i++
+        if(i<1000)
+        {
+			break;
+		}
 
     }
 }
