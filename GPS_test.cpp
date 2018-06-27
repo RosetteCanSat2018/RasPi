@@ -7,11 +7,10 @@
 
 Sensor sensor;
 
-
 int main()
 {
 	char GPSData[2]
-	
+	sensor.GPSConfig();
     while(1) 
     {
         if(sensor.GPSGetData(GPSdata)) 
