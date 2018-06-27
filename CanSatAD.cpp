@@ -17,18 +17,18 @@ void CanSatAD::SetParameter(int magnet_origin_x, int magnet_origin_y, int magnet
 	state_number = 7;
 	Qshape = 3;
 	y_number = 9;
+	
+	accel_array = MatrixXf(3, stay);
+	gyro_array = MatrixXf(3, stay);
+	magnet_array = MatrixXf(3, stay);
 
-	accel_array(3, stay);
-	gyro_array(3, stay);
-	magnet_array(3, stay);
-
-	magnet_origin(3);
+	magnet_origin = VectorXf(3);
 	magnet_origin << magnet_origin_x, magnet_origin_y, magnet_origin_z;
 
 	// 内部変数
 	x = VectorXf(state_number);
 
-	y_array(y_number, stay);
+	y_array = MatrixXf(y_number, stay);
 
 	// 共分散行列(サイズの宣言のみ)
 	P = MatrixXf::Identity(state_number, state_number);

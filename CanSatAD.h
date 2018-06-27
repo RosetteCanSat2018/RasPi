@@ -3,6 +3,14 @@
 
 #include "EKF.h"
 
+#include "Eigen/Core"
+#include "Eigen/LU"
+
+#define _USE_MATH_DEFINES
+#include <math.h>
+
+using namespace Eigen;
+
 class CanSatAD : public EKF
 {
 public:

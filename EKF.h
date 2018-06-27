@@ -29,6 +29,14 @@
 #ifndef _EKF_H_
 #define _EKF_H_
 
+#include "Eigen/Core"
+#include "Eigen/LU"
+
+#define _USE_MATH_DEFINES
+#include <math.h>
+
+using namespace Eigen;
+
 class EKF
 {
 public:
@@ -60,7 +68,7 @@ public:
 	virtual void FunctionH() = 0;
 
 	// カルマンフィルタ(予測＋フィルタリング)
-	virtual void KalmanFilter() = 0;
+	//virtual void KalmanFilter() = 0;
 
 protected:
 	
