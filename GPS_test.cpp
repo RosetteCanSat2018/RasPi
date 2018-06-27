@@ -14,7 +14,7 @@ int main()
     while(1) 
     {
 		sensor.GPSGetData(GPSData);
-        i++
+        i++;
         if(i<1000)
         {
 			break;
