@@ -129,40 +129,36 @@ void Sensor::GetMotion9(double Sdata[9])
 
 void Sensor::GPSGetData(float data[2])
 {
-	FILE *fp1;
 	float time;
     char ns, ew;
     int lock;
-
-	fp1 = fopen("/home/pi/GPSbuffer.csv","r");
-	if(fopen("/home/pi/GPSbuffer.csv","r")!=NULL)
-		{
-			while(fgets(msg,30,fp1) != NULL)
-				{
-					if(sscanf(msg, "GPGGA,%f,%f,%c,%f,%c,%d", &time, &latitude, &ns, &longitude, &ew, &lock) >= 1) 
-					{ 
-						if(!lock)
-							{
-								longitude = 0.0;
-								latitude = 0.0;        
-							} 
-						else 
-							{
-								if(ns == 'S') {    latitude  *= -1.0; }
-								if(ew == 'W') {    longitude *= -1.0; }
-								float degrees = GPStrunc(latitude / 100.0f);
-								float minutes = latitude - (degrees * 100.0f);
-								latitude = degrees + minutes / 60.0f;    
-								degrees = GPStrunc(longitude / 100.0f * 0.01f);
-								minutes = longitude - (degrees * 100.0f);
-								longitude = degrees + minutes / 60.0f;
-								data[1] = latitude;
-								data[0] = longitude;
-							}
+	
+    while(1)
+    {
+		bb_serial_read(pi,GPSgpio,msg,256);
+		if(sscanf(msg, "GPGGA,%f,%f,%c,%f,%c,%d", &time, &latitude, &ns, &longitude, &ew, &lock) >= 1) 
+			{ 
+				if(!lock)
+					{
+						longitude = 0.0;
+						latitude = 0.0;        
+					} 
+				else 
+					{
+						if(ns == 'S') {    latitude  *= -1.0; }
+						if(ew == 'W') {    longitude *= -1.0; }
+						float degrees = GPStrunc(latitude / 100.0f);
+						float minutes = latitude - (degrees * 100.0f);
+						latitude = degrees + minutes / 60.0f;    
+						degrees = GPStrunc(longitude / 100.0f * 0.01f);
+						minutes = longitude - (degrees * 100.0f);
+						longitude = degrees + minutes / 60.0f;
+						data[1] = latitude;
+						data[0] = longitude;
 					}
-				}
-		}
+			}
 }
+
 
 float Sensor::GPStrunc(float v) 
 {
