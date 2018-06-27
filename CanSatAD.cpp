@@ -28,6 +28,7 @@ void CanSatAD::SetParameter(int magnet_origin_x, int magnet_origin_y, int magnet
 	// 内部変数
 	x = VectorXf(state_number);
 
+	y_array(y_number, stay);
 
 	// 共分散行列(サイズの宣言のみ)
 	P = MatrixXf::Identity(state_number, state_number);
@@ -42,7 +43,7 @@ void CanSatAD::SetParameter(int magnet_origin_x, int magnet_origin_y, int magnet
 	G = MatrixXf(state_number, y_number);
 	h_x = VectorXf(y_number);
 
-	//DCM = MatrixXf(3, 3);
+	DCM = MatrixXf(3, 3);
 }
 
 // 内部変数の初期値設定
@@ -92,6 +93,43 @@ void CanSatAD::GetValue(double Sdata[])
 void CanSatAD::OffsetMagnet()
 {
 	magnet_array.colwise() -= magnet_origin;
+}
+
+// 事前解析
+void CanSatAD::PreAnalysis()
+{
+	// 静止状態の地磁気の大きさ
+	VectorXf magnet_average = magnet_array.rowwise().mean();
+	magnet_norm = magnet_average.norm();
+
+	//　静止状態の加速度の大きさ
+	VectorXf accel_average = accel_array.rowwise().mean();
+	accel_norm = accel_average.norm();
+
+	// 伏角
+	float inner = accel_average.dot(magnet_average); // 内積
+	float norm = magnet_norm * accel_norm; // ノルムの積
+	inclination = inner / norm; // cosθ
+	if (inclination < -1) { inclination = -1; } // -1<theta<1 の判定
+	if (inclination > 1) { inclination = 1; }
+	inclination = acos(inclination) *(180 / M_PI); // [deg]
+	if (inclination > 90) {
+		inclination = 180 - inclination;
+	}
+	inclination = 90 - inclination;
+
+	// 入力共分散行列
+	MatrixXf gyro_differential(3, stay - 1);
+	for (int i = 0; i < stay - 1; i++) {
+		gyro_differential(0, i) = (gyro_array(0, i + 1) - gyro_array(0, i)) / frequency;
+		gyro_differential(1, i) = (gyro_array(1, i + 1) - gyro_array(1, i)) / frequency;
+		gyro_differential(2, i) = (gyro_array(2, i + 1) - gyro_array(2, i)) / frequency;
+	}
+	Q = Covariance(gyro_differential);
+
+	// 観測共分散行列
+	y_array << gyro_array, magnet_array, accel_array;
+	R = Covariance(y_array);
 }
 
 // 行列A
@@ -170,38 +208,25 @@ void CanSatAD::MatrixC()
 // 関数h
 void CanSatAD::FunctionH()
 {
-	MatrixXf DCM(3, 3);
-	DCM = ToDCM(x_.segment(3, 4));
+	MatrixXf DCM_temp(3, 3);
+	DCM_temp = ToDCMtemp(x_.segment(3, 4));
 
 	float inclination_temp = inclination * (M_PI / 180);
 
 	VectorXf matrix1 = VectorXf::Zero(3);
 	matrix1(0) = magnet_norm * cos(inclination);
 	matrix1(2) = magnet_norm * (-sin(inclination));
-	matrix1 = DCM * matrix1;
+	matrix1 = DCM_temp * matrix1;
 
 	VectorXf matrix2 = VectorXf::Zero(3);
 	matrix2(2) = accel_norm;
-	matrix2 = DCM * matrix2;
+	matrix2 = DCM_temp * matrix2;
 
-	VectorXf h_x(9);
 	h_x << x_.segment(0, 3), matrix1, matrix2;
 }
 
-// 正規化
-VectorXf Normalize(VectorXf x)
-{
-
-}
-
-// カルマンゲインの修正
-void KalmanGainCorrect(MatrixXf& G, VectorXf y, const float accel_norm, const float inclination)
-{
-
-}
-
-// 方向余弦行列
-MatrixXf ToDCM(VectorXf q)
+// 方向余弦行列(関数h内で使うもの)
+MatrixXf CanSatAD::ToDCMtemp(VectorXf q)
 {
 	float C11 = q(0) * q(0) - q(1) * q(1) - q(2) * q(2) + q(3) * q(3);
 	float C12 = 2 * (q(0) * q(1) + q(2) * q(3));
@@ -213,8 +238,110 @@ MatrixXf ToDCM(VectorXf q)
 	float C32 = 2 * (q(1) * q(2) - q(0) * q(3));
 	float C33 = q(2) * q(2) - q(0) * q(0) - q(1) * q(1) + q(3) * q(3);
 
-	MatrixXf DCM(3, 3);
-	DCM << C11, C12, C13, C21, C22, C23, C31, C32, C33;
+	MatrixXf DCM_temp(3, 3);
+	DCM_temp << C11, C12, C13, C21, C22, C23, C31, C32, C33;
 
+	return DCM_temp;
+}
+
+void CanSatAD::ToDCM(VectorXf q)
+{
+	float C11 = q(0) * q(0) - q(1) * q(1) - q(2) * q(2) + q(3) * q(3);
+	float C12 = 2 * (q(0) * q(1) + q(2) * q(3));
+	float C13 = 2 * (q(2) * q(0) - q(1) * q(3));
+	float C21 = 2 * (q(0) * q(1) - q(2) * q(3));
+	float C22 = q(1) * q(1) - q(2) * q(2) - q(0) * q(0) + q(3) * q(3);
+	float C23 = 2 * (q(1) * q(2) + q(0) * q(3));
+	float C31 = 2 * (q(2) * q(0) + q(1) * q(3));
+	float C32 = 2 * (q(1) * q(2) - q(0) * q(3));
+	float C33 = q(2) * q(2) - q(0) * q(0) - q(1) * q(1) + q(3) * q(3);
+
+	DCM << C11, C12, C13, C21, C22, C23, C31, C32, C33;
+}
+
+// 正規化
+VectorXf CanSatAD::Normalize(VectorXf x)
+{
+	x.segment(3, 4) = x.segment(3, 4).normalized();
+	return x;
+}
+
+// カルマンゲインの修正
+void CanSatAD::KalmanGainCorrect()
+{
+	// 加速度の大きさ条件
+	VectorXf magnet_value(3);
+	magnet_value = y.segment(3, 3);
+	VectorXf accel_value(3);
+	accel_value = y.segment(6, 3);
+	bool norm_condition = abs((accel_value.norm() - accel_norm)) < (accel_norm*0.05);
+
+	// 加速度の向き条件
+	float inner = magnet_value.dot(accel_value); // 内積
+	float norm = magnet_value.norm() * accel_value.norm(); // ノルムの積
+	float cos = inner / norm;
+	if (cos < -1) { cos = -1; } // -1<theta<1 の判定
+	if (cos > 1) { cos = 1; }
+	float angle = acos(cos) *(180 / M_PI); // [deg]
+	if (angle > 90) {
+		angle = 180 - angle;
+	}
+	bool direction_condition = abs(angle - (90 - inclination)) < 5;
+
+	if (!(norm_condition && direction_condition)) {
+		G.block(0, 6, 7, 3) = MatrixXf::Zero(7, 3);
+	}
+}
+
+// カルマンフィルタ(予測＋フィルタリング)
+void CanSatAD::KalmanFilter(VectorXf y_value)
+{
+	/*** 予測ステップ ********************************/
+	MatrixA();
+
+	MatrixB();
+
+	x_ = Normalize(x);
+
+	PreCovariance();
+
+	MatrixC();
+
+	/*** フィルタリングステップ **********************/
+	KalmanGain();
+
+	KalmanGainCorrect();
+
+	FunctionH();
+
+	x = x_ + G * (y_value - h_x);
+
+	P = (MatrixXf::Identity(7, 7) - G * C) * P_;
+}
+
+// クォータニオン，共分散行列の適正値算出
+void CanSatAD::Converge(int loop_number)
+{
+	for (int i = 0; i < loop_number - 1; i++) {
+		int k = i + 1;
+		KalmanFilter(y_array.col(k));
+	}
+}
+
+// 姿勢推定
+void CanSatAD::AtittudeEstimate()
+{
+	KalmanFilter(y);
+}
+
+// 内部変数を返す
+VectorXf CanSatAD::GetStateVariable()
+{
+	return x;
+}
+
+// DCNを返す
+MatrixXf CanSatAD::GetDCM()
+{
 	return DCM;
 }

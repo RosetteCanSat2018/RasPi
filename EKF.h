@@ -51,16 +51,16 @@ public:
 	virtual void MatrixC() = 0;
 
 	// 事前共分散行列
-	MatrixXf PreCovariance();
+	void PreCovariance();
 
 	// カルマンゲイン
-	MatrixXf KalmanGain();
+	void KalmanGain();
 
 	// 関数h
 	virtual void FunctionH() = 0;
 
 	// カルマンフィルタ(予測＋フィルタリング)
-	void KalmanFilter(MatrixXf A, MatrixXf B, VectorXf x_, MatrixXf P_, MatrixXf C, VectorXf y, MatrixXf G, MatrixXf DCM, VectorXf h_x, VectorXf x, MatrixXf P, MatrixXf Q, MatrixXf R, float magnet_norm, float accel_norm, float inclination);
+	virtual void KalmanFilter() = 0;
 
 protected:
 	

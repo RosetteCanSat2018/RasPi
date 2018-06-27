@@ -18,6 +18,9 @@ public:
 	// オフセット処理(地磁気)
 	void OffsetMagnet();
 
+	// 事前解析
+	void PreAnalysis();
+
 	// 姿勢推定時のセンサ値格納
 	void GetValue(double Sdata[]);
 
@@ -36,18 +39,36 @@ public:
 	// 関数h
 	void FunctionH();
 
+	// 方向余弦行列(関数h内で使うもの)
+	MatrixXf ToDCMtemp(VectorXf q);
+
+	// 方向余弦行列(最終的に出力するもの)
+	void ToDCM(VectorXf q);
+
 	// 正規化
 	VectorXf Normalize(VectorXf x);
 
 	// カルマンゲインの修正
-	void KalmanGainCorrect(MatrixXf& G, VectorXf y, const float accel_norm, const float inclination);
+	void KalmanGainCorrect();
 
-	// 方向余弦行列
-	MatrixXf ToDCM(VectorXf q);
+	// カルマンフィルタ(予測＋フィルタリング)
+	void KalmanFilter(VectorXf y_value);
+
+	// クォータニオン，共分散行列の適正値算出
+	void Converge(int loop_number);
+
+	// 姿勢推定
+	void AtittudeEstimate();
+
+	// 内部変数を返す
+	VectorXf GetStateVariable();
+
+	// DCNを返す
+	MatrixXf GetDCM();
 
 private:
 	const float frequency = 0.01;
-	const int stay = 15; // 収束するまでに必要な静止状態のデータ数
+	const int stay = 1500; // 収束するまでに必要な静止状態のデータ数
 	MatrixXf accel_array;
 	MatrixXf gyro_array;
 	MatrixXf magnet_array;
@@ -58,9 +79,11 @@ private:
 	float accel_norm;
 	float inclination;
 
+	MatrixXf y_array;
+
 	int gamma; // 共分散行列の初期値
 
-	//MatrixXf DCM;
+	MatrixXf DCM;
 
 
 };

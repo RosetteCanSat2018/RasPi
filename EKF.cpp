@@ -45,13 +45,13 @@ MatrixXf EKF::Covariance(MatrixXf matrix)
 }
 
 // 事前共分散行列
-MatrixXf EKF::PreCovariance()
+void EKF::PreCovariance()
 {
-	return A * P*A.transpose() + B * Q*B.transpose();
+	P_ =  A * P*A.transpose() + B * Q*B.transpose();
 }
 
 // カルマンゲイン
-MatrixXf EKF::KalmanGain()
+void EKF::KalmanGain()
 {
-	return P_ * C.transpose() * (C * P_ * C.transpose() + R).inverse();
+	G = P_ * C.transpose() * (C * P_ * C.transpose() + R).inverse();
 }
