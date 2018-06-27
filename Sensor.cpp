@@ -141,8 +141,8 @@ void Sensor::GPSGetData(float data[2])
 				if(!lock)
 					{
 						longitude = 0.0;
-						latitude = 0.0;
-						return 0;        
+						latitude = 0.0;   
+						cout<<"miss";
 					} 
 				else 
 					{
@@ -156,11 +156,12 @@ void Sensor::GPSGetData(float data[2])
 						longitude = degrees + minutes / 60.0f;
 						data[1] = latitude;
 						data[0] = longitude;
-						printf("%f,%f"data[0],data[1]);
+						cout<<data[0]<<","<<data[1];
 					}
 			}
+		cout<<"LoopNow";
+	}
 }
-
 
 float Sensor::GPStrunc(float v) 
 {
