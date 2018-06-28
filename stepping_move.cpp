@@ -29,7 +29,7 @@ void Stepping::decidePin()
 void Stepping::rotate360(float wait_time)
 {
 	int count = 0;
-	while(count++ < 50)
+	while(count++ < 2)
 	{
 		gpio_write(pi, black_A1, 1);
 		gpio_write(pi, red_B1, 0);
