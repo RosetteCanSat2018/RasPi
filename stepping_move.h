@@ -11,7 +11,12 @@ class Stepping
 	public:
 		void getPi();
 		void decidePin();
-		void rotate360(float wait_time);
+		void ClockwiseRotation(int cycle);
+		void CounterClockwiseRotation(int cycle);
+		void ClockwiseTick(int count);
+		void CounterClockwiseTick(int count);
+		void control(int rotation);
+
 		/*void hmcInit();
 		void mpuInit();
 		void mpuSetConfig();
