@@ -15,43 +15,43 @@ void EKF::SetParameter(int state_number, int Qshape, int y_number)
 {
 	/// 変数の宣言をここで行う //////////////////////////
 	// 内部変数
-	x = VectorXf(state_number);
+	x = VectorXd(state_number);
 
 	// 内部変数の初期値はサブクラス内で設定する
 
 	// 共分散行列(サイズの宣言のみ，初期化はサブクラスで)
-	P = MatrixXf::Identity(state_number, state_number);
+	P = MatrixXd::Identity(state_number, state_number);
 
 	// カルマンフィルタのパラメータ
-	A = MatrixXf(state_number, state_number);
-	B = MatrixXf(state_number, Qshape);
-	x_ = VectorXf(state_number);
-	P_ = MatrixXf(state_number, state_number);
-	C = MatrixXf(y_number, state_number);
-	y = VectorXf(y_number);
-	G = MatrixXf(state_number, y_number);
-	h_x = VectorXf(y_number);
+	A = MatrixXd(state_number, state_number);
+	B = MatrixXd(state_number, Qshape);
+	x_ = VectorXd(state_number);
+	P_ = MatrixXd(state_number, state_number);
+	C = MatrixXd(y_number, state_number);
+	y = VectorXd(y_number);
+	G = MatrixXd(state_number, y_number);
+	h_x = VectorXd(y_number);
 
 }
 
 // 共分散行列
-MatrixXf EKF::Covariance(MatrixXf matrix)
+MatrixXd EKF::Covariance(MatrixXd matrix)
 {
-	VectorXf average = matrix.rowwise().mean();
-	MatrixXf cov1 = matrix.colwise() - average;
-	MatrixXf cov2 = cov1.transpose();
+	VectorXd average = matrix.rowwise().mean();
+	MatrixXd cov1 = matrix.colwise() - average;
+	MatrixXd cov2 = cov1.transpose();
 
 	return (cov1 * cov2) / matrix.cols();
 }
 
 // 事前共分散行列
-MatrixXf EKF::PreCovariance()
+void EKF::PreCovariance()
 {
-	return A * P*A.transpose() + B * Q*B.transpose();
+	P_ =  A * P*A.transpose() + B * Q*B.transpose();
 }
 
 // カルマンゲイン
-MatrixXf EKF::KalmanGain()
+void EKF::KalmanGain()
 {
-	return P_ * C.transpose() * (C * P_ * C.transpose() + R).inverse();
+	G = P_ * C.transpose() * (C * P_ * C.transpose() + R).inverse();
 }

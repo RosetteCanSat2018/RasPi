@@ -29,6 +29,14 @@
 #ifndef _EKF_H_
 #define _EKF_H_
 
+#include "Eigen/Core"
+#include "Eigen/LU"
+
+#define _USE_MATH_DEFINES
+#include <math.h>
+
+using namespace Eigen;
+
 class EKF
 {
 public:
@@ -39,7 +47,7 @@ public:
 	virtual void SetInitial(int gamma) = 0;
 
 	//共分散行列を計算する関数
-	MatrixXf Covariance(MatrixXf matrix);
+	MatrixXd Covariance(MatrixXd matrix);
 
 	// 行列A
 	virtual void MatrixA() = 0;
@@ -51,16 +59,16 @@ public:
 	virtual void MatrixC() = 0;
 
 	// 事前共分散行列
-	MatrixXf PreCovariance();
+	void PreCovariance();
 
 	// カルマンゲイン
-	MatrixXf KalmanGain();
+	void KalmanGain();
 
 	// 関数h
 	virtual void FunctionH() = 0;
 
 	// カルマンフィルタ(予測＋フィルタリング)
-	void KalmanFilter(MatrixXf A, MatrixXf B, VectorXf x_, MatrixXf P_, MatrixXf C, VectorXf y, MatrixXf G, MatrixXf DCM, VectorXf h_x, VectorXf x, MatrixXf P, MatrixXf Q, MatrixXf R, float magnet_norm, float accel_norm, float inclination);
+	//virtual void KalmanFilter() = 0;
 
 protected:
 	
@@ -73,36 +81,36 @@ protected:
 	int y_number; // 測定値の変数の数
 
 	// 内部変数
-	VectorXf x;
+	VectorXd x;
 	// 共分散行列
-	MatrixXf P;
+	MatrixXd P;
 
-	MatrixXf Q;
-	MatrixXf R;	
-	MatrixXf A;
-	MatrixXf B;
-	VectorXf x_;
-	MatrixXf P_;
-	MatrixXf C;
-	VectorXf y;
-	MatrixXf G;
-	VectorXf h_x;
+	MatrixXd Q;
+	MatrixXd R;	
+	MatrixXd A;
+	MatrixXd B;
+	VectorXd x_;
+	MatrixXd P_;
+	MatrixXd C;
+	VectorXd y;
+	MatrixXd G;
+	VectorXd h_x;
 
 };
 
 #endif
 
 /*
-MatrixXf *x = 0;
+MatrixXd *x = 0;
 
-x = new MatrixXf(3, 3);
+x = new MatrixXd(3, 3);
 *x << 1, 1, 1, 1, 1, 1, 1, 1, 1;
 PRINT_MAT(*x);
 */
 
 /*
-MatrixXf x;
-x = MatrixXf(3, 3);
+MatrixXd x;
+x = MatrixXd(3, 3);
 x << 1, 1, 1, 1, 1, 1, 1, 1, 1;
 PRINT_MAT(x);
 */
