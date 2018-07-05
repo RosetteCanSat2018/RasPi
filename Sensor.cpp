@@ -200,8 +200,9 @@ void Sensor::GPSGetLine()
 	{
 		cout<<"a"<<endl;
 		gpioSerialRead(15,msg,256);
-		for(int i=0; i<256; i++)
-		{
+		/*
+			for(int i=0; i<256; i++)
+			{
 			if(strcmp(&msg[i],"$GPGGA")==0)
 			{
 				cout<<"OK"<<endl;
@@ -213,9 +214,12 @@ void Sensor::GPSGetLine()
 				}
 				count = k;
 			}
+			}*/
+		for (int i = 0; i < 256; i++)
+		{
+			fpg << msg[i] << "," << i << endl;
 		}
-		sleep(1);
-		fpg<<buffer<<endl;
+		usleep(100000);
 		l++;
 		if(l>200)
 		{
