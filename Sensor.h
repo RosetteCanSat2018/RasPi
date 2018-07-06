@@ -16,15 +16,19 @@ class Sensor
 		float longitude,latitude;
 	
 		void getPi();
+		void pigpioStop();
+		//HMC5883L_____________________________________________
 		void hmcInit();
-		void mpuInit();
-		void mpuSetConfig();
 		void hmcSetConfigA(char config);
 		void hmcSetConfigB(char config);
-		void GPSConfig();
 		void hmcSetMode(char config);
-		void GetMotion9(double Sdata[9]);
-		void pigpioStop();
-		void GPSGetData(float data[2]);
+		void hmcGetXYZ(double Mg[3]);
+		//MPU6050______________________________________________
+		void mpuInit();
+		void mpuSetConfig();
+		void mpuGetMotion6(double ACGY[6]);
+		//GPS__________________________________________________
+		void GPSGetLine(float data[2]);
 		float GPStrunc(float v);
+		void GPSread();
 };

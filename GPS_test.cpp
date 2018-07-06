@@ -6,19 +6,12 @@
 #include <stdio.h>
 
 Sensor sensor;
-int i=0;
+
 int main()
 {
 	float GPSData[2];
-	sensor.GPSConfig();
-    while(1) 
-    {
-		sensor.GPSGetData(GPSData);
-        i++;
-        if(i<1000)
-        {
-			break;
-		}
-
-    }
+	gpioInitialise();
+	sensor.GPSread();
+	sensor.GPSGetLine(GPSData);
+   
 }

@@ -134,92 +134,42 @@ void Sensor::GPSread()
 	gpioSetMode(15,0);
 	gpioSerialReadOpen(15,9600,8);
 }
-void Sensor::GPSGetData(float data[2])
+
+void Sensor::GPSGetLine(float data[2])
 {
 	float time;
-    char ns, ew;
-    int lock,k;
-	k=0;
-	
-    while(1)
-    {
-		GPSGetLine();
-		//cout<<msg<<endl;
-		if(sscanf(msg,"$GPGGA,%f,%f,%c,%f,%c,%d", &time, &latitude, &ns, &longitude, &ew, &lock) >= 1) 
-			{ 
-				if(!lock)
-					{
-						longitude = 0.0;
-						latitude = 0.0;   
-						cout<<"miss";
-					} 
-				else 
-					{
-						if(ns == 'S') {    latitude  *= -1.0; }
-						if(ew == 'W') {    longitude *= -1.0; }
-						float degrees = GPStrunc(latitude / 100.0f);
-						float minutes = latitude - (degrees * 100.0f);
-						latitude = degrees + minutes / 60.0f;    
-						degrees = GPStrunc(longitude / 100.0f * 0.01f);
-						minutes = longitude - (degrees * 100.0f);
-						longitude = degrees + minutes / 60.0f;
-						data[1] = latitude;
-						data[0] = longitude;
-						cout<<data[0]<<","<<data[1];
-					}
-			}
-			usleep(100000);
-			k++;
-			if(k>1000)
-			{
-				break;
-			}
-	}
-}
-
-float Sensor::GPStrunc(float v) 
-{
-    if(v < 0.0) 
-		{
-			v*= -1.0;
-			v = floor(v);
-			v*=-1.0;
-		} 
-	else 
-		{
-			v = floor(v);
-		}
-    return v;
-}
-
-void Sensor::GPSGetLine()
-{
+	char ns, ew;
+	int lock;
 	int count=0,k=0,l=0;
-	ofstream fpg("/home/pi/Sensor/GPSlog.csv",ios::out);
+	ofstream fpg("/home/pi/Sensor/GPSlog.csv",ios::app);
 	while(1)
 	{
-		cout<<"a"<<endl;
 		gpioSerialRead(15,msg,256);
-		/*
-			for(int i=0; i<256; i++)
-			{
-			if(strcmp(&msg[i],"$GPGGA")==0)
-			{
-				cout<<"OK"<<endl;
-				k=0;
-				while(strcmp(&msg[i+k],"$GPGSA"))
-				{
-					buffer[count+k] = msg[i+k];
-					k++;
-				}
-				count = k;
-			}
-			}*/
-		for (int i = 0; i < 256; i++)
+		if (sscanf(msg, "$GPGGA,%f,%f,%c,%f,%c,%d", &time, &latitude, &ns, &longitude, &ew, &lock) >= 1)
 		{
-			fpg << msg[i] << "," << i << endl;
+			if (!lock)
+			{
+				longitude = 0.0;
+				latitude = 0.0;
+				cout << "miss" << endl;
+			}
+			else
+			{
+				if (ns == 'S') { latitude *= -1.0; }
+				if (ew == 'W') { longitude *= -1.0; }
+				float degrees = GPStrunc(latitude / 100.0f);
+				float minutes = latitude - (degrees * 100.0f);
+				latitude = degrees + minutes / 60.0f;
+				degrees = GPStrunc(longitude / 100.0f * 0.01f);
+				minutes = longitude - (degrees * 100.0f);
+				longitude = degrees + minutes / 60.0f;
+				data[1] = latitude;
+				data[0] = longitude;
+				cout << data[0] << "," << data[1] << endl;
+				fpg << time << "," << data[1] << "," << ns << "," << data[0] << "," << ew << endl;
+			}
 		}
-		usleep(100000);
+		usleep(90000);
 		l++;
 		if(l>200)
 		{
@@ -229,6 +179,20 @@ void Sensor::GPSGetLine()
 	fpg.close();
 }
 
+void Sensor::GPStrunc(float v)
+{
+	if (v < 0.0) 
+	{
+		v *= -1.0;
+		v = floor(v);
+		v *= -1.0;
+	}
+	else 
+	{
+		v = floor(v);
+	}
+	return v;
+}
 
 //Finish---------------------------------------------
 void Sensor::pigpioStop()
