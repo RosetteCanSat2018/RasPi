@@ -10,6 +10,6 @@ int main()
 	
 	StepMotor.StepCW(100);
 	StepMotor.StepCCW(100);
-	
+
 	return 0;
 }
