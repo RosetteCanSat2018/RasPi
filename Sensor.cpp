@@ -131,8 +131,9 @@ void  Sensor::hmcGetXYZ(double Mg[3])
 //GPS
 void Sensor::GPSread()
 {
-	gpioSetMode(15,0);
-	gpioSerialReadOpen(15,9600,16);
+	//gpioSetMode(15,0);
+	//gpioSerialReadOpen(15,9600,16);
+	ser = serOpen("/dev/ttyS0", 9600, 0);
 }
 
 void Sensor::GPSGetLine(float data[2])
@@ -144,7 +145,8 @@ void Sensor::GPSGetLine(float data[2])
 	ofstream fpg("/home/pi/Sensor/GPSlog.csv",ios::app);
 	while(1)
 	{
-		gpioSerialRead(15,msg,256);
+		//gpioSerialRead(15,msg,256);
+		serRead(ser, msg, 16);
 		if (sscanf(msg, "$GPGGA,%f,%f,%c,%f,%c,%d", &time, &latitude, &ns, &longitude, &ew, &lock) >= 1)
 		{
 			if (!lock)
@@ -199,6 +201,7 @@ void Sensor::pigpioStop()
 {
 	i2cClose(MPU6050_i2c);
 	i2cClose(HMC5883L_i2c);
+	serClose(ser);
 }
 
 #endif

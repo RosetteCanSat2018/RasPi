@@ -6,7 +6,7 @@ using namespace std;
 class Sensor
 {
 	private :
-		int pi;
+		int pi,ser;
 		int MPU6050_i2c;
 		int HMC5883L_i2c;
 		double Mg[3],ACGY[6];
