@@ -132,7 +132,7 @@ void  Sensor::hmcGetXYZ(double Mg[3])
 void Sensor::GPSread()
 {
 	gpioSetMode(15,0);
-	gpioSerialReadOpen(15,9600,8);
+	gpioSerialReadOpen(15,9600,16);
 }
 
 void Sensor::GPSGetLine(float data[2])
