@@ -11,7 +11,11 @@ int main()
 {
 	float GPSData[2];
 	gpioInitialise();
-	sensor.GPSread();
-	sensor.GPSGetLine(GPSData);
+	sensor.GPSGetData(GPSData);
    
 }
+/* how to compile
+
+g++ -Wall -pthread -o GPS Sensor.cpp GPS_test.cpp -lm -lgps -lpigpio -lrt
+
+*/

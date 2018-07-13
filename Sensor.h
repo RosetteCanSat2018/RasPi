@@ -28,7 +28,5 @@ class Sensor
 		void mpuSetConfig();
 		void mpuGetMotion6(double ACGY[6]);
 		//GPS__________________________________________________
-		void GPSGetLine(float data[2]);
-		float GPStrunc(float v);
-		void GPSread();
+		void GPSGetData(float data[2]);
 };
