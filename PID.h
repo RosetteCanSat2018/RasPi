@@ -1,6 +1,6 @@
 #ifndef PID_H
 #define PID_H
-　
+
 class PID {
 public:
     PID();
@@ -9,19 +9,19 @@ public:
     // Initialize
     void Init(double Kp_, double Ki_, double Kd_);
 
-    // 偏差の更新
+    //update error
     void UpdateError(double error);
 
      // Calculate the total PID error.
     double TotalError();
 
 private:
-    // 偏差
-    double p_error; // 比例
-    double i_error; // 積分
-    double d_error; // 微分
+    // error
+    double p_error; // proportion
+    double i_error; // integral
+    double d_error; // differential
 
-    //ゲイン
+    // gain
     double Kp;
     double Ki;
     double Kd;
@@ -31,3 +31,4 @@ private:
 };
 
 #endif /* PID_H */
+

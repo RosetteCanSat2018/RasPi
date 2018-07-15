@@ -13,41 +13,45 @@ int main()
 	StepMotor.SetGPIO(4, 17, 27, 22);
 
     PID pid;
-    pid.Init(0.13,0.0009,3.5); // ゲインを入力する
+    pid.Init(0.00001,0.001,0.03); //Input gain
 
-    double error; // 偏差
-    double set_angle = 0; // 目標角度
-    double angle; // カルマンフィルタで算出した現在角度
-    double steer_value; // PIDの操作量
-    int rotate_step; // ステッピングモーターの駆動ステップ数
-	int counter = 0;
+    double error; 
+    double set_angle = 0; // target angle
+    double angle; // current angle calcurated by Kalmann
+    double steer_value; // amount of PID manipulation
+    int rotate_step; // rotate step of motor
+	int counter = 60;
 
     while(1){
 		if (counter == 360) {
-			counter = 0;
+			counter = 60;
 		}
 
 		angle = counter;
+         cout << "angle=" << angle << endl;
 
-        // 現在の偏差(deg)を計算
+        // calcurate current error
         error = set_angle - angle;
+        cout << "error=" << error << endl; 
 
-        // 偏差の更新
+        // update error
         pid.UpdateError(error);
 
-        // PIDの操作量(deg)を計算
+        // calculate PID manipulation
         steer_value = pid.TotalError();
+        cout << "steer_value=" << steer_value <<endl;
 
-        // 駆動ステップ数への変換
-		rotate_step = int(steer_value / 10);
+        // conversion rotate step
+	rotate_step = int(steer_value / 1.8);
 
-        // パドル駆動
+        // move motor
         if (rotate_step > 0){
             StepMotor.StepCW(rotate_step);
         }else if (rotate_step < 0){
             StepMotor.StepCCW(abs(rotate_step));
+            cout << "rotate_step = "<< rotate_step << endl;
         }
-		sleep(2);
-		counter += 60;
+		sleep(1);
+		counter = counter + 60;
     }
 }

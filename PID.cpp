@@ -7,10 +7,13 @@ PID::PID() {}
 
 PID::~PID() {}
 
+
+
 void PID::Init(double Kp_, double Ki_, double Kd_) {
   Kp = Kp_;
   Ki = Ki_;
   Kd = Kd_;
+  i_error = 0;
 }
 
 void PID::UpdateError(double error) {
@@ -23,9 +26,12 @@ void PID::UpdateError(double error) {
     prev_error = error;
   }
   p_error = error;
-  i_error +=error;
+  i_error = i_error + error;
 }
 
 double PID::TotalError() {
-  return -Kp*p_error - Ki*i_error - Kd*d_error;
+  cout << "p_error=" << p_error << endl;
+  cout << "i_error=" << i_error << endl;
+  cout << "d_error=" << d_error << endl;
+  return -Kp*p_error -  Ki*i_error -  Kd*d_error;
 }
