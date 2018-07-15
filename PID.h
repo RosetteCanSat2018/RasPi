@@ -21,7 +21,7 @@ private:
     double i_error; // 積分
     double d_error; // 微分
 
-    // ゲイン
+    //ゲイン
     double Kp;
     double Ki;
     double Kd;
