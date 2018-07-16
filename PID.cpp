@@ -33,5 +33,5 @@ double PID::TotalError() {
   cout << "p_error=" << p_error << endl;
   cout << "i_error=" << i_error << endl;
   cout << "d_error=" << d_error << endl;
-  return -Kp*p_error -  Ki*i_error -  Kd*d_error;
+  return  Kp*p_error +  Ki*i_error +  Kd*d_error;
 }

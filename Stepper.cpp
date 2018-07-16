@@ -14,7 +14,7 @@ void Stepper::SetGPIO(int PinA1_, int PinA2_, int PinB1_, int PinB2_)
 	PinB2 = PinB2_;
 	Step = 0;
 	
-	SetWaitTime(0.01);
+	SetWaitTime(0.01);//(0.01);
 
 	gpioSetMode(PinA1, 1);
 	gpioSetMode(PinA2, 1);
@@ -33,9 +33,12 @@ void Stepper::SetGPIO(int PinA1_, int PinA2_, int PinB1_, int PinB2_)
 // ウェイト時間を設定する
 void Stepper::SetWaitTime(double wait)
 {
+	/*
 	if (wait < 0.01) { StepWait = 0.005; }
 	else if (wait > 0.5) { StepWait = 0.1; }
 	else { StepWait = wait; }
+	*/
+	StepWait = wait;
 
 }
 

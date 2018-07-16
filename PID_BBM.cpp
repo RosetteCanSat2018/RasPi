@@ -42,7 +42,7 @@ int main()
         cout << "steer_value=" << steer_value <<endl;
 
         // conversion rotate step
-	rotate_step = int(steer_value / 1.8);
+	    rotate_step = int(steer_value / 1.8);
 
         // move motor
         if (rotate_step > 0){

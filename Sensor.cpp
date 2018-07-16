@@ -9,8 +9,9 @@
 #include <string.h>
 #include <iostream>
 #include <gps.h>
+#include <stdlib.h>
 
-#define MPU6050_ADDRS                    0x68
+#define MPU6050_ADDRS                   0x68
 #define MPU6050_RA_ACCEL_XOUT_H         0x3B
 #define HMC5883L_ADDRS                  0x1E
 //#define HMC5883L_i2c                  0x3D
@@ -104,7 +105,7 @@ void Sensor::mpuGetMotion6(double ACGY[6])
 	ACGY[2] = -1*(double)output[2]/2048.0*9.81; //+-16g:2048.0 +-8g:4096.0 +-4g:8192.0 +-2g:16384.0 
 	ACGY[3] = (double)output[3]/939.7;
 	ACGY[4] = (double)output[4]/939.7;
-	ACGY[5] = (double)output[5]/939.7; //2000/s:939.7 1000/s:1879.3 500/s:3752.9 250/s:7505.7
+	ACGY[5] = (double)output[5]/16.4; //2000/s:939.7 1000/s:1879.3 500/s:3752.9 250/s:7505.7
  	
 }
 //HMC5883L
@@ -130,40 +131,41 @@ void  Sensor::hmcGetXYZ(double Mg[3])
 	
 }
 //GPS
+
 void Sensor::GPSGetData(float data[2])
 {
 	//struct timeval tv;
 	struct gps_data_t gps_data;
-	if ((rc = gps_open("localhost", "2947", &gps_data)) == -1)
+	if ((rc = gps_open("localhost", "2947", &gps_data)) == -1) 
 	{
 		printf("code: %d, reason: %s\n", rc, gps_errstr(rc));
 		//return EXIT_FAILURE;
 	}
 	gps_stream(&gps_data, WATCH_ENABLE | WATCH_JSON, NULL);
-
-	while (1)
+ 
+	while (1) 
 	{
 		/* wait for 2 seconds to receive data */
-		if (gps_waiting(&gps_data, 2000000))
+		if (gps_waiting (&gps_data, 2000000))
 		{
 			/* read data */
-			if ((rc = gps_read(&gps_data)) == -1)
+			if ((rc = gps_read(&gps_data)) == -1) 
 			{
 				printf("error occured reading gps data. code: %d, reason: %s\n", rc, gps_errstr(rc));
 			}
-			else
+			else 
 			{
 				/* Display data from the GPS receiver. */
-				if ((gps_data.status == STATUS_FIX) &&
-					(gps_data.fix.mode == MODE_2D || gps_data.fix.mode == MODE_3D) &&
-					!isnan(gps_data.fix.latitude) &&
-					!isnan(gps_data.fix.longitude))
-				{
-					//gettimeofday(&tv, NULL); EDIT: tv.tv_sec isn't actually the timestamp!
-					printf("latitude: %f, longitude: %f", gps_data.fix.latitude, gps_data.fix.longitude); //EDIT: Replaced tv.tv_sec with gps_data.fix.time
-					data[0] = gps_data.fix.latitude;
-					data[1] = gps_data.fix.longitude;
-				}
+				if ((gps_data.status == STATUS_FIX) && 
+                (gps_data.fix.mode == MODE_2D || gps_data.fix.mode == MODE_3D) &&
+                !isnan(gps_data.fix.latitude) && 
+                !isnan(gps_data.fix.longitude)) 
+                {
+                    //gettimeofday(&tv, NULL); EDIT: tv.tv_sec isn't actually the timestamp!
+                    printf("latitude: %f, longitude: %f", gps_data.fix.latitude, gps_data.fix.longitude); //EDIT: Replaced tv.tv_sec with gps_data.fix.time
+                    data[0] = gps_data.fix.latitude;
+                    data[1] = gps_data.fix.longitude;
+				} 
 				else
 				{
 					printf("no GPS data available\n");
@@ -181,7 +183,6 @@ void Sensor::pigpioStop()
 {
 	i2cClose(MPU6050_i2c);
 	i2cClose(HMC5883L_i2c);
-	serClose(ser);
 }
 
 #endif
