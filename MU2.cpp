@@ -3,26 +3,22 @@
 #include <pigpio.h>
 #include <iostream>
 
-//#define MU2_pin 14
-
 using namespace std;
 
-unsigned char  terminal1 = '\r';
-unsigned char  terminal2 = '\n';
+
 
 void MU2::setPin()
 {
-	//gpioSetMode(MU2_pin, PI_OUTPUT);
 	MU2_handle = serOpen("/dev/ttyS0", 19200, 0);
-	cout << "MU2_handle=" << MU2_handle << endl;
+	//cout << "MU2_handle=" << MU2_handle << endl;
 }
 
 void MU2::SendTerminal()
 {
-	a = serWriteByte(MU2_handle, terminal1);
-	cout << "a=" << a << endl;
-	b = serWriteByte(MU2_handle, terminal2);
-	cout << "b=" << b << endl;
+	a = serWriteByte(MU2_handle, '\r');
+	//cout << "a=" << a << endl;
+	b = serWriteByte(MU2_handle, '\n');
+	//cout << "b=" << b << endl;
 }
 
 void MU2::MU2Initialise()
@@ -37,33 +33,41 @@ void MU2::MU2Initialise()
 	SendTerminal();
 }
 
-void MU2::Send(unsigned char data[])
+void MU2::Send(char data[])
 {
-	//send_data_len = strlen(send_data);
+	char i_data[6];
+	i_data[0] = '@';
+	i_data[1] = 'D';
+	i_data[2] = 'T';
 	
-    send_data_len = 9;
-
-	for (send_counter = 0; send_counter < send_data_len ; send_counter++) {
-		c = serWriteByte(MU2_handle,data[send_counter]);
-		cout << "c=" << c << endl;
+	data_len = strlen(data);
+	data_num = data_len;
+	//cout << "data_len =" << data_len << endl;
+	for(int i=4;i>2;i--){
+		if(data_len%16<10){
+			i_data[i]='0' + data_len%16;
+		}else{
+			switch(data_len%16){
+				case 10:i_data[i]='A';break;
+				case 11:i_data[i]='B';break;
+				case 12:i_data[i]='C';break;
+				case 13:i_data[i]='D';break;
+				case 14:i_data[i]='E';break;
+				case 15:i_data[i]='F';break;
+			}
+		}
+		data_len/=16;
 	}
-	
-	//serWrite(MU2_handle,data,10);
+	for (int counter = 0; counter < 5; counter++) {
+		serWriteByte(MU2_handle,i_data[counter]);
+		cout << "i_data [" << counter << "] = " << i_data[counter] << endl;
+	}	
+
+	for (int data_counter = 0; data_counter < data_num; data_counter++) {
+		serWriteByte(MU2_handle,data[data_counter]);
+		cout << "data [" << data_counter << "] = " << data[data_counter] << endl;
+	}  
+
 	SendTerminal();
-	/*
-        serWriteByte(MU2_handle,'@');
-        serWriteByte(MU2_handle,'D');
-        serWriteByte(MU2_handle,'T');
-        serWriteByte(MU2_handle,'0');
-        serWriteByte(MU2_handle,'6');
-        serWriteByte(MU2_handle,'a');
-        serWriteByte(MU2_handle,'b');
-        serWriteByte(MU2_handle,'c');
-        serWriteByte(MU2_handle,'1');
-        serWriteByte(MU2_handle,'2');
-        serWriteByte(MU2_handle,'3');
-        serWriteByte(MU2_handle,'\r');
-        serWriteByte(MU2_handle,'\n');
-     */
 }
 
