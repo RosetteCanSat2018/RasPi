@@ -3,25 +3,26 @@
 #include <pigpio.h>
 #include <iostream>
 
-#define MU2_pin 14
+//#define MU2_pin 14
 
 using namespace std;
 
-char  terminal1 = '\r';
-char  terminal2 = '\n';
+unsigned char  terminal1 = '\r';
+unsigned char  terminal2 = '\n';
 
 void MU2::setPin()
 {
-	gpioSetMode(MU2_pin, 1);
+	//gpioSetMode(MU2_pin, PI_OUTPUT);
 	MU2_handle = serOpen("/dev/ttyS0", 19200, 0);
+	cout << "MU2_handle=" << MU2_handle << endl;
 }
 
 void MU2::SendTerminal()
 {
-	serWriteByte(MU2_handle, terminal1);
-	//cout << terminal1 << endl;
-	serWriteByte(MU2_handle, terminal2);
-	//cout << terminal2 << endl;
+	a = serWriteByte(MU2_handle, terminal1);
+	cout << "a=" << a << endl;
+	b = serWriteByte(MU2_handle, terminal2);
+	cout << "b=" << b << endl;
 }
 
 void MU2::MU2Initialise()
@@ -36,21 +37,19 @@ void MU2::MU2Initialise()
 	SendTerminal();
 }
 
-void MU2::Send(char data[])
+void MU2::Send(unsigned char data[])
 {
 	//send_data_len = strlen(send_data);
-	
 	
     send_data_len = 9;
 
 	for (send_counter = 0; send_counter < send_data_len ; send_counter++) {
-		serWriteByte(MU2_handle,data[send_counter]);
-        cout << data[send_counter] << endl;
+		c = serWriteByte(MU2_handle,data[send_counter]);
+		cout << "c=" << c << endl;
 	}
 	
 	//serWrite(MU2_handle,data,10);
 	SendTerminal();
-	
 	/*
         serWriteByte(MU2_handle,'@');
         serWriteByte(MU2_handle,'D');

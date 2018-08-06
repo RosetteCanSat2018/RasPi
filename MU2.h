@@ -1,15 +1,16 @@
 #ifndef MU2_H
 #define MU2_H 
 
-
-
 class MU2
 {
 private:
 	int pi;
-	char terminal1;
-	char terminal2;
-    int MU2_handle;
+	unsigned char terminal1;
+	unsigned char terminal2;
+	int MU2_handle;
+    int a;
+    int b;
+    int c;
 
 public:
 	int send_data_len;
@@ -17,7 +18,7 @@ public:
 	void setPin();
 	void MU2Initialise();
     void SendTerminal();
-	void Send(char data[]);
+	void Send(unsigned char data[]);
 };
 
 
