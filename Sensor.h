@@ -1,32 +1,26 @@
 #include <stdint.h>
 #include <fstream>
+#include <string>
 
 using namespace std;
 
 class Sensor
 {
-	private :
-		int pi,ser;
-		int MPU6050_i2c;
-		int HMC5883L_i2c;
-		double Mg[3],ACGY[6];
-		char msg[256];
-	
-	public:
-		float longitude,latitude;
-	
-		void getPi();
-		void pigpioStop();
-		//HMC5883L_____________________________________________
-		void hmcInit();
-		void hmcSetConfigA(char config);
-		void hmcSetConfigB(char config);
-		void hmcSetMode(char config);
-		void hmcGetXYZ(double Mg[3]);
-		//MPU6050______________________________________________
-		void mpuInit();
-		void mpuSetConfig();
-		void mpuGetMotion6(double ACGY[6]);
-		//GPS__________________________________________________
-		void GPSGetData(float data[2]);
+private:
+	int MPL3115A2_i2c;
+	int rc;
+
+public:
+	float longitude, latitude;
+
+	void getPi();
+	void  pigpioStop();
+
+	//MPL3115A2---------------------------------------------
+	void mplSetConfig();
+	double mplGetALT(double sea_pressure);
+
+	//GPS---------------------------------------------------
+	void GPSGetData(char c_data[2]);
+	void GPSGetData_f(float data[2]);
 };
