@@ -53,7 +53,7 @@ int main(int argc, char* argv[])
 		i++;
 		//cv::waitKey(10);
 		gpioTime(0, &s2, &m2);
-		if (s2 - s1 >= 10)
+		if (s2 - s1 >= 720)
 		{
 			writer.release();
 			fprintf(fp, "start:%d.%03dseconds\r\n", s1, m1 / 1000);
@@ -62,7 +62,8 @@ int main(int argc, char* argv[])
 			break;
 		}
 	}
+	cout << "end program" << endl;
 	return 0;
 }
+//g++ camera_test.cpp -o test -I/usr/local/include -L/usr/local/lib -lopencv_core -lopencv_highgui -lopencv_videoio -lpigpio -lrt
 
-//g++ camera_test.cpp - o test - I / usr / local / include - L / usr / local / lib - lopencv_core - lopencv_highgui - lopencv_videoio - lpigpio - lrt
