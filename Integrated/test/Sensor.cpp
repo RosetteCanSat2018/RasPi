@@ -33,12 +33,13 @@ double Sensor::mplGetALT(double sea_pressure)
 	double pressure = (pres / 4.0) / 100.0;
 	int temp = ((data[4] * 256) + (data[5] & 0xF0)) / 16;
 	float cTemp = (temp / 16.0);
-	double alt = ((pow((sea_pressure / pressure ), (1 / 5.257)) - 1)*(cTemp + 273.15)) / 0.0065;
+	double alt = ((pow((sea_pressure / pressure), (1 / 5.257)) - 1)*(cTemp + 273.15)) / 0.0065;
 	return alt;
 }
 //GPS
 void Sensor::GPSGetData(char c_data[2])
 {
+	GPS_handle = serOpen("/dev/ttyS0", 9600, 0);
 	float data[2];
 	string s_data;
 	//struct timeval tv;
@@ -85,10 +86,12 @@ void Sensor::GPSGetData(char c_data[2])
 		}
 	}
 	//return 0;
+	serClose(GPS_handle);
 }
 
 void Sensor::GPSGetData_f(float data[2])
 {
+	GPS_handle = serOpen("/dev/ttyS0", 9600, 0);
 	//struct timeval tv;
 	struct gps_data_t gps_data;
 	if ((rc = gps_open("localhost", "2947", &gps_data)) == -1)
@@ -97,6 +100,8 @@ void Sensor::GPSGetData_f(float data[2])
 		//return EXIT_FAILURE;
 	}
 	gps_stream(&gps_data, WATCH_ENABLE | WATCH_JSON, NULL);
+
+	int count = 0;
 
 	while (1)
 	{
@@ -107,6 +112,7 @@ void Sensor::GPSGetData_f(float data[2])
 			if ((rc = gps_read(&gps_data)) == -1)
 			{
 				printf("error occured reading gps data. code: %d, reason: %s\n", rc, gps_errstr(rc));
+
 			}
 			else
 			{
@@ -124,11 +130,17 @@ void Sensor::GPSGetData_f(float data[2])
 				}
 				else
 				{
-					printf("no GPS data available\n");
+					
+					//printf("no GPS data available\n");
+
+					//if(count == 5){break;}
+
+					//count++;
 				}
 			}
 		}
 	}
+	serClose(GPS_handle);
 }
 //Finish----------------------------------------------------------------------------------------------------------------------------------------------------------
 void Sensor::pigpioStop()

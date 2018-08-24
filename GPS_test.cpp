@@ -23,7 +23,9 @@ int main()
 	gpioInitialise();
 	GPS_prev[0] = 0;
 	GPS_prev[1] = 0;
-
+	int a = serOpen("/dev/ttyS0", 19200, 0);
+	serClose(a);
+	int b = serOpen("/dev/ttyS0", 9600, 0);
 	while (1)
 	{
 		gpioSetTimerFunc(0, TIMER, func);

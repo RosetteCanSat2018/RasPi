@@ -82,12 +82,14 @@ void MU2::Send(char data[])
 }
 
 void MU2::SendGPS(float data){
+	MU2_handle = serOpen("/dev/ttyS0", 19200, 0);
 	string s_GPS;
 	s_GPS = to_string(data);
 	char c_GPS[8] = {};
 	s_GPS.copy(c_GPS, 8);
 	serWrite(MU2_handle, c_GPS, 8);
 	SendTerminal();
+	serClose(MU2_handle);
 }
 
 void MU2::closeMU2(){

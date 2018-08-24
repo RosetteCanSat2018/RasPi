@@ -9,11 +9,10 @@ class Sensor
 	private :
 		int MPL3115A2_i2c;
 		int rc;
+		int GPS_handle;
 	
 	public:
 		float longitude,latitude;
-	
-		void getPi();
 		void  pigpioStop();
 
 		//MPL3115A2---------------------------------------------
