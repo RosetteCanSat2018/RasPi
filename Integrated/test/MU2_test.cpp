@@ -28,8 +28,8 @@ int main() {
 	mu.Send("START Program");
 
 	float GPSf[2];
-	while(1){
-		signal(SIGINT,escape_program);
+	while (1) {
+		signal(SIGINT, escape_program);
 		sensor.GPSGetData_f(GPSf);
 		cout << GPSf[1] << endl;
 		mu.Send("12345");
@@ -43,18 +43,18 @@ int main() {
 
 	/*
 	for(int i=0;i<7;i++){
-		mu.Send(c_data);
-		}
+	mu.Send(c_data);
+	}
 	*/
 
 	mu.Send("END Program");
 
 
-    //serClose(handle);
+	//serClose(handle);
 
 
 }
-void escape_program(int sig){
-	cout << "escape program" <<endl;
-	mu.closeMU2();
+void escape_program(int sig) {
+	cout << "escape program" << endl;
+	exit(1);
 }
