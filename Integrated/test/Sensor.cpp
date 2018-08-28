@@ -16,13 +16,13 @@
 
 //Config------------------------------------------------------------------------------------------------------------------
 //MPL3115A2
-	void Sensor::mplSetConfig()
-	{
-		MPL3115A2_i2c = i2cOpen(1, MPL3115A2_ADDRS, 0);
-		i2cWriteWordData(MPL3115A2_i2c, 0x26, 0xB8); //Active mode, OSR = 10, Altimeter mode
-		i2cWriteWordData(MPL3115A2_i2c, 0x13, 0x07); //Data ready event enabled for altitude, pressure, temperature
-		i2cWriteWordData(MPL3115A2_i2c, 0x26, 0x01); //Data ready event enabled for altitude, pressure, temperature
-	}
+void Sensor::mplSetConfig()
+{
+	MPL3115A2_i2c = i2cOpen(1, MPL3115A2_ADDRS, 0);
+	i2cWriteWordData(MPL3115A2_i2c, 0x26, 0xB8); //Active mode, OSR = 10, Altimeter mode
+	i2cWriteWordData(MPL3115A2_i2c, 0x13, 0x07); //Data ready event enabled for altitude, pressure, temperature
+	i2cWriteWordData(MPL3115A2_i2c, 0x26, 0x01); //Data ready event enabled for altitude, pressure, temperature
+}
 //getData------------------------------------------------------------------------------------------------------------------
 //MPL3115A2
 double Sensor::mplGetALT(double sea_pressure)
@@ -73,10 +73,10 @@ void Sensor::GPSGetData(char c_data[2])
 					//printf("latitude: %f, longitude: %f", gps_data.fix.latitude, gps_data.fix.longitude); //EDIT: Replaced tv.tv_sec with gps_data.fix.time
 					data[0] = gps_data.fix.latitude;
 					data[1] = gps_data.fix.longitude;
-					for(int i=0; i<2; i++){
-					s_data = to_string(data[i]);
-					s_data.copy(c_data,2);
-				}
+					for (int i = 0; i<2; i++) {
+						s_data = to_string(data[i]);
+						s_data.copy(c_data, 2);
+					}
 				}
 				else
 				{
@@ -130,14 +130,21 @@ void Sensor::GPSGetData_f(float data[2])
 				}
 				else
 				{
-					
+
 					//printf("no GPS data available\n");
 
-					//if(count == 5){break;}
+					//cout << count << endl;
+					//if (count == 5) { break; }
 
 					//count++;
+					
 				}
 			}
+		}
+		count++;
+		if (count == 5) { 
+			cout << "not GPS data" << endl;
+			break; 
 		}
 	}
 	serClose(GPS_handle);
