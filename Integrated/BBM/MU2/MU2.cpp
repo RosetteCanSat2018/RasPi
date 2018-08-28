@@ -5,11 +5,11 @@
 #include <unistd.h>
 using namespace std;
 
-#include <string>
+
 
 void MU2::setPin()
 {
-	//MU2_handle = serOpen("/dev/ttyS0", 19200, 0);
+	MU2_handle = serOpen("/dev/ttyS0", 19200, 0);
 	//cout << "MU2_handle=" << MU2_handle << endl;
 }
 
@@ -35,12 +35,11 @@ void MU2::MU2Initialise()
 
 void MU2::Send(char data[])
 {
-	MU2_handle = serOpen("/dev/ttyS0", 19200, 0);
 	char i_data[6];
 	i_data[0] = '@';
 	i_data[1] = 'D';
 	i_data[2] = 'T';
-
+	
 	data_len = strlen(data);
 	data_num = data_len;
 	cout << "data_len =" << data_len << endl;

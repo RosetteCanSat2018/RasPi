@@ -16,14 +16,14 @@
 #include "Servo.h"
 #include <gps.h>
 #include "MU2.h"
-#include "PID.h"
+//#include "PID.h"
 
 #define HEAT_PERIOD 9 // [msec]
 #define HEAT_CYCLE 100 //[msec]
 #define HEAT_LOOP 50 //HEAT_PERIOD + HEAT_CYCLE [msec/LOOP]
 #define CONTROL_RATE_1 100// [millisec]
 #define ALT_TIMER 3 // [sec] in a row
-#define SEA_LEVEL_PRESSURE 1002.8 // [hPa]
+#define SEA_LEVEL_PRESSURE 1014.8 // [hPa]
 #define GPS_SEND_RATE 10 // [sec]
 #define LANDING_COUNTER 10000000000 //10
 #define MISSION_TIME 1200 // [sec]
@@ -33,9 +33,17 @@
 #define P_GAIN_2 0.3
 #define I_GAIN_2 0
 #define D_GAIN_2 0
+#define ERROR_SATURATION_2 90 // [deg]
+double gyro_z; // for control mode 1
+int mode_flag = 0; // 1:mode1, 0:mode2
 double error;
 double set_angle = 0; // target angle
 double raw_angle; // angle from bno055
+double prepreangle = 0; // for median filter
+double preangle = 0;
+int p_flag = 0;
+int n_flag = 0;
+double angle; // filtered angle
 double totalerror;
 int paddledegree; // amount of PID manipulation, rotate step of motor
 
@@ -48,7 +56,7 @@ Sensor sensor;
 MU2 mu;
 Servo servo;
 //PID pid1;
-PID pid2;
+//PID pid2;
 FILE *fp;
 
 int s1 = 0;
@@ -102,11 +110,12 @@ int main() {
 	gpioInitialise();
 	bno.Init();
 	youdan.Init(16, 20, 4);
+	//mu.setPin();
 	servo.SetServo(19, 26);
 	servo.MoveServo(0); //set initial position
 	sensor.mplSetConfig(); //mpl configulation
 	//pid1.Init(P_GAIN_1, I_GAIN_1, D_GAIN_1);
-	pid2.Init(P_GAIN_2, I_GAIN_2, D_GAIN_2);
+	//pid2.Init(P_GAIN_2, I_GAIN_2, D_GAIN_2);
 	GPSf_prev[0] = 0;
 	GPSf_prev[1] = 0;
 	alt_prev = 0;
@@ -124,7 +133,7 @@ int main() {
 			break;
 		}
 	}
-
+	
 	for (int i = 0; i < 5; i++) {
 		mu.Send("Parachute Open");
 		sleep(1);
@@ -134,6 +143,8 @@ int main() {
 		youdan.HeatNichrome(HEAT_PERIOD*1000, HEAT_CYCLE*1000);
 		signal(SIGINT,escape_heat);
 	}
+
+	//while(1){gpioWrite(4, 0);}
 
 	/* full mission, attitude control using 9-axis sensor ------------*/
 	fp = fopen("/home/pi/Ballon/LogData1.csv", "w");
@@ -196,6 +207,9 @@ void func1()
 
 		sensor.GPSGetData_f(GPSf);
 
+		mu.SendGPS(GPSf[0]);
+		mu.SendGPS(GPSf[1]);
+
 		if (fabsf(GPSf[0] - GPSf_prev[0]) == 0 && fabsf(GPSf[1] - GPSf_prev[1]) == 0 && fabsf(alt_prev - alt) <= 5.0){
 			landing_counter++;
 		}
@@ -229,11 +243,11 @@ void func1()
 	*/
 
 
-
+	/*
 	raw_angle = bno.GetAngle();
 	error = set_angle - raw_angle;
-	pid2.UpdateError(error);
-	totalerror = (int)pid2.TotalError();
+	//pid2.UpdateError(error);
+	//totalerror = (int)pid2.TotalError();
 	paddledegree = (int)totalerror;
 	servo.MoveServo(paddledegree);
 
@@ -241,7 +255,7 @@ void func1()
 	cout << error << endl;
 	cout << totalerror << endl;
 	cout << paddledegree << endl;
-
+	*/
 
 
 }
