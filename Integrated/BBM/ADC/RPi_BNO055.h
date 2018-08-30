@@ -316,15 +316,13 @@ public:
 	MatrixXd GetDCM();
 	double GetAngle();
 
-
-
 private:
 	VectorXd q;
 	MatrixXd DCM;
 	int BNO055_SAMPLERATE_DELAY_MS;
 	int USBHandle;
-	VectorXd body;
-	VectorXd inertial;
+	VectorXd body1, body2;
+	VectorXd inertial1, inertial2;
 	double angle;
 };
 

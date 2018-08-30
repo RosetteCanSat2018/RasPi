@@ -36,3 +36,7 @@ double PID::TotalError() {
   return (-Kp*p_error -  Ki*i_error -  Kd*d_error);
   //return (int)((-Kp*p_error -  Ki*i_error -  Kd*d_error) *35/90);
 }
+
+void PID::IerrorReset() {
+	i_error = 0;
+}

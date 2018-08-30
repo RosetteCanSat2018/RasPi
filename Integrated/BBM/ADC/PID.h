@@ -15,6 +15,7 @@ public:
      // Calculate the total PID error.
     double TotalError();
 
+	void IerrorReset();
 
 
 private:
@@ -27,6 +28,8 @@ private:
     double Kp;
     double Ki;
     double Kd;
+
+	// i mode
 
     bool init_d = false;
     double prev_error;

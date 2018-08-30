@@ -598,9 +598,12 @@ int Adafruit_BNO055::Init()
 {
 	q = VectorXd(4);
 	DCM = MatrixXd(3, 3);
-	body = VectorXd(3);
-	body << 0,0,1;
-	inertial = VectorXd(3);
+	body1 = VectorXd(3);
+	body2 = VectorXd(3);
+	body1 << 0,0,1;
+	body2 << 0,0,-1;
+	inertial1 = VectorXd(3);
+	inertial2 = VectorXd(3);
 
 	//BNO055_SAMPLERATE_DELAY_MS = _BNO055_SAMPLERATE_DELAY_MS;
 
@@ -613,6 +616,7 @@ int Adafruit_BNO055::Init()
 	_HandleBNO=i2cOpen(_i2cChannel,BNO055_ADDRESS_A,0);
 
 	if(!begin(OPERATION_MODE_NDOF))
+	//if(!begin(OPERATION_MODE_IMUPLUS))
 	{
 		std::cout << "Ooops, no BNO055 detected ... Check your wiring or I2C ADDR!" << std::endl;
     	while(1);
@@ -643,7 +647,6 @@ int Adafruit_BNO055::AttitudeDeterminate()
 	double C32 = 2 * (q(1) * q(2) - q(0) * q(3));
 	double C33 = q(2) * q(2) - q(0) * q(0) - q(1) * q(1) + q(3) * q(3);
 	DCM << C11, C12, C13, C21, C22, C23, C31, C32, C33;
-
 }
 
 void Adafruit_BNO055::PrintQ()
@@ -695,12 +698,17 @@ MatrixXd Adafruit_BNO055::GetDCM()
 
 double Adafruit_BNO055::GetAngle()
 {
-	inertial = DCM.transpose() * body;
+	inertial1 = DCM.transpose() * body1;
+	inertial2 = DCM.transpose() * body2;
 
-	if(inertial(0)==0){return 0;}
+	// singular point
+	if (inertial1(0)==inertial2(0) && inertial1(1)==inertial2(1)) {
+		cout << "singular" << endl;
+		return angle;
+	}
 
-	//angle = atan(inertial(0)/inertial(1));
-	angle = atan2(inertial(1), inertial(0));
+	angle = atan2(inertial1(1)-inertial2(1), inertial1(0)-inertial2(0));
+	//angle = atan2(inertial1(1), inertial1(0));
 	angle = angle * (180/M_PI);
 
 	return angle;
