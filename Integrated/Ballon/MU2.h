@@ -1,5 +1,5 @@
 #ifndef MU2_H
-#define MU2_H
+#define MU2_H 
 
 
 class MU2
@@ -13,13 +13,10 @@ private:
 public:
 	int data_len;
 	int data_num;
-	void setPin();
 	void MU2Initialise();
     void SendTerminal();
 	void Send(char data[]);
-	void SendGPS(float data);
-	void closeMU2();
 };
+#endif 
 
 
-#endif

@@ -27,7 +27,7 @@ using namespace std;
 #define MIN_NUM_FEAT 2000
 
 // IMP: Change the file directories (4 places) according to where your dataset is saved before running!
-/*
+
 double getAbsoluteScale(int frame_id, int sequence_id, double z_cal) {
 
 	string line;
@@ -63,41 +63,39 @@ double getAbsoluteScale(int frame_id, int sequence_id, double z_cal) {
 	return sqrt((x - x_prev)*(x - x_prev) + (y - y_prev)*(y - y_prev) + (z - z_prev)*(z - z_prev));
 
 }
-*/
+
 
 int main(int argc, char** argv) {
 
-	Mat img_1, img_2; //二枚の画像
+	Mat img_1, img_2;
 	Mat R_f, t_f; //the final rotation and tranlation vectors containing the 
 
-	//ofstream myfile;　//書き込み用ファイル
-	//myfile.open("results1_1.txt"); //書き込み用ファイル
+	ofstream myfile;
+	myfile.open("results1_1.txt");
 
-	//double scale = 1.00;
+	double scale = 1.00;
 	char filename1[200];
 	char filename2[200];
-	sprintf(filename1, "/home/pi/BBM/ImageProcessing/KITTI_VO/00/image_2/%06d.png", 0);//filename1に文字配列を格納
-	sprintf(filename2, "/home/pi/BBM/ImageProcessing/KITTI_VO/00/image_2/%06d.png", 1);//filename2に文字配列を格納
+	sprintf(filename1, "/home/pi/BBM/ImageProcessing/KITTI_VO/00/image_2/%06d.png", 0);
+	sprintf(filename2, "/home/pi/BBM/ImageProcessing/KITTI_VO/00/image_2/%06d.png", 1);
 
-	/*
 	char text[100];
 	int fontFace = FONT_HERSHEY_PLAIN;
 	double fontScale = 1;
 	int thickness = 1;
-	cv::Point textOrg(10, 50);　//テキストをセンタリング
-	*/
+	cv::Point textOrg(10, 50);
 
 	//read the first two frames from the dataset
-	Mat img_1_c = imread(filename1); //ファイルから画像を読み込み
-	Mat img_2_c = imread(filename2); //ファイルから画像を読み込み　
+	Mat img_1_c = imread(filename1);
+	Mat img_2_c = imread(filename2);
 
 	if (!img_1_c.data || !img_2_c.data) {
 		std::cout << " --(!) Error reading images " << std::endl; return -1;
 	}
 
 	// we work with grayscale images
-	cvtColor(img_1_c, img_1, COLOR_BGR2GRAY); //２値下
-	cvtColor(img_2_c, img_2, COLOR_BGR2GRAY); //２値下
+	cvtColor(img_1_c, img_1, COLOR_BGR2GRAY);
+	cvtColor(img_2_c, img_2, COLOR_BGR2GRAY);
 
 	// feature detection, tracking
 	vector<Point2f> points1, points2;        //vectors to store the coordinates of the feature points
@@ -107,57 +105,56 @@ int main(int argc, char** argv) {
 
 															 //TODO: add a fucntion to load these values directly from KITTI's calib files
 															 // WARNING: different sequences in the KITTI VO dataset have different intrinsic/extrinsic parameters
-	double focal = 718.8560; //焦点距離$$$$$$$$$$$$$$$$$キャリブレーションの必要あり$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-	//cv::Point2d pp(607.1928, 185.2157); //２次元上の点を表す
+	double focal = 718.8560;
+	cv::Point2d pp(607.1928, 185.2157);
 	//recovering the pose and the essential matrix
 	Mat E, R, t, mask;
-	E = findEssentialMat(points2, points1, focal, pp, RANSAC, 0.999, 1.0, mask); //RANSAC:ノイズ除去,Essential行列の算出
-	recoverPose(E, points2, points1, R, t, focal, pp, mask); //カメラの並進と回転を求める
+	E = findEssentialMat(points2, points1, focal, pp, RANSAC, 0.999, 1.0, mask);
+	recoverPose(E, points2, points1, R, t, focal, pp, mask);
 
-	Mat prevImage = img_2; //画像２を格納
-	Mat currImage; //新たな画像を取り込むための変数
-	vector<Point2f> prevFeatures = points2; //vectors to store the coordinates of the feature points
-	vector<Point2f> currFeatures; 
+	Mat prevImage = img_2;
+	Mat currImage;
+	vector<Point2f> prevFeatures = points2;
+	vector<Point2f> currFeatures;
 
 	char filename[100];
 
-	R_f = R.clone(); //Matの深いコピー
-	t_f = t.clone(); //Matの深いコピー
+	R_f = R.clone();
+	t_f = t.clone();
 
-	clock_t begin = clock(); //CPU時間の記録
+	clock_t begin = clock();
 
-	//namedWindow("Road facing camera", WINDOW_AUTOSIZE);// Create a window for display.
-	//namedWindow("Trajectory", WINDOW_AUTOSIZE);// Create a window for display.
+	namedWindow("Road facing camera", WINDOW_AUTOSIZE);// Create a window for display.
+	namedWindow("Trajectory", WINDOW_AUTOSIZE);// Create a window for display.
 
-	Mat traj = Mat::zeros(600, 600, CV_8UC3); //600×600のカラー画像の生成
+	Mat traj = Mat::zeros(600, 600, CV_8UC3);
 
-	for (int numFrame = 2; numFrame < MAX_FRAME; numFrame++) {　//画像を読み込んで処理しているためwhile文に書き直す
-		sprintf(filename, "/home/pi/BBM/ImageProcessing/KITTI_VO/00/image_2/%06d.png", numFrame); //filenameに文字配列を格納
+	for (int numFrame = 2; numFrame < MAX_FRAME; numFrame++) {
+		sprintf(filename, "/home/pi/BBM/ImageProcessing/KITTI_VO/00/image_2/%06d.png", numFrame);
 		//cout << numFrame << endl;
-		Mat currImage_c = imread(filename); //ファイルから画像読み込み
-		cvtColor(currImage_c, currImage, COLOR_BGR2GRAY); //二値化
-		vector<uchar> status;　 //vectors to store the coordinates of the feature points
-		featureTracking(prevImage, currImage, prevFeatures, currFeatures, status);　//特徴点検出
+		Mat currImage_c = imread(filename);
+		cvtColor(currImage_c, currImage, COLOR_BGR2GRAY);
+		vector<uchar> status;
+		featureTracking(prevImage, currImage, prevFeatures, currFeatures, status);
 
-		E = findEssentialMat(currFeatures, prevFeatures, focal, pp, RANSAC, 0.999, 1.0, mask); //RANSAC:ノイズ除去,Essential行列の算出
-		recoverPose(E, currFeatures, prevFeatures, R, t, focal, pp, mask); //カメラの並進と回転を求める
+		E = findEssentialMat(currFeatures, prevFeatures, focal, pp, RANSAC, 0.999, 1.0, mask);
+		recoverPose(E, currFeatures, prevFeatures, R, t, focal, pp, mask);
 
-		Mat prevPts(2, prevFeatures.size(), CV_64F), currPts(2, currFeatures.size(), CV_64F); 
+		Mat prevPts(2, prevFeatures.size(), CV_64F), currPts(2, currFeatures.size(), CV_64F);
 
 
 		for (int i = 0; i<prevFeatures.size(); i++) {   //this (x,y) combination makes sense as observed from the source code of triangulatePoints on GitHub
-			prevPts.at<double>(0, i) = prevFeatures.at(i).x; //座標の画素値にアクセス
+			prevPts.at<double>(0, i) = prevFeatures.at(i).x;
 			prevPts.at<double>(1, i) = prevFeatures.at(i).y;
 
 			currPts.at<double>(0, i) = currFeatures.at(i).x;
 			currPts.at<double>(1, i) = currFeatures.at(i).y;
 		}
 
-		// scale = getAbsoluteScale(numFrame, 0, t.at<double>(2));
+		scale = getAbsoluteScale(numFrame, 0, t.at<double>(2));
 
 		//cout << "Scale is " << scale << endl;
 
-		/*
 		if ((scale>0.1) && (t.at<double>(2) > t.at<double>(0)) && (t.at<double>(2) > t.at<double>(1))) {
 
 			t_f = t_f + scale * (R_f*t);
@@ -168,7 +165,6 @@ int main(int argc, char** argv) {
 		else {
 			//cout << "scale below 0.1, or incorrect translation" << endl;
 		}
-		*/
 
 		// lines for printing results
 		// myfile << t_f.at<double>(0) << " " << t_f.at<double>(1) << " " << t_f.at<double>(2) << endl;
@@ -185,7 +181,6 @@ int main(int argc, char** argv) {
 		prevImage = currImage.clone();
 		prevFeatures = currFeatures;
 
-		/*
 		int x = int(t_f.at<double>(0)) + 300;
 		int y = int(t_f.at<double>(2)) + 100;
 		circle(traj, Point(x, y), 1, CV_RGB(255, 0, 0), 2);
@@ -196,7 +191,6 @@ int main(int argc, char** argv) {
 
 		imshow("Road facing camera", currImage_c);
 		imshow("Trajectory", traj);
-		*/
 
 		waitKey(1);
 

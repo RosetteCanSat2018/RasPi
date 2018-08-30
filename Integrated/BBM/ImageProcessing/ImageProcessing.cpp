@@ -12,6 +12,7 @@ using namespace std;
 #define MAX_FRAME 1000
 #define MIN_NUM_FEAT 2000
 
+<<<<<<< HEAD
 int main() {
 
 	gpioInitialise();
@@ -131,3 +132,5 @@ int main() {
 	cout << "end program" << endl;
 	return 0;
 }
+=======
+>>>>>>> 28d7c3f2fbb0b947d45091435a290a71b9ec3c83
