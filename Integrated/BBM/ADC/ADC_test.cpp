@@ -6,6 +6,7 @@
 #include "RPi_BNO055.h"
 #include "imumaths.h"
 #include "PID.h"
+#include "Youdan.h"
 #include <iomanip>
 
 using namespace std;
@@ -17,17 +18,18 @@ using namespace std;
 // for mode switch
 #define MODE_CONDITION_UPPER 150.0 // [deg/sec]
 #define MODE_CONDITION_LOWER 20.0 // [deg/sec]
+#define MODE_PERIOD_CONDITION 2.0 // [sec], mode0 >> mode1
 
 /* for mode 0, PD control */
 #define P_GAIN_1 50.0
 #define I_GAIN_1 0
 #define D_GAIN_1 70.0
 #define SATURATION_1 5000.0
-#define MAX_PADDLE_DEGREE_1 35.0
+#define MAX_PADDLE_DEGREE_1 20.0
 
 /* for mode 1, PI control */
 #define P_GAIN_2 50.0
-#define I_GAIN_2 1.0
+#define I_GAIN_2 0.1
 #define D_GAIN_2 70.0
 #define SATURATION_2 10000.0
 #define MAX_PADDLE_DEGREE_2 10.0
@@ -40,6 +42,7 @@ Adafruit_BNO055 bno = Adafruit_BNO055();
 Servo servo;
 PID pid1;
 PID pid2;
+Youdan youdan;
 
 imu::Vector<3> accel;
 imu::Vector<3> gyro;
@@ -65,10 +68,14 @@ int noise_flag = 0;
 
 int i_error_reset_count = 0;
 
+int mode_count = 0;
+
 int s1 = 0;
 int m1 = 0;
 int s2, m2, i;
 double freq;
+
+FILE *fp;
 
 void func();
 
@@ -85,6 +92,7 @@ double MedianFilter(double val1, double val2, double val3)
 
 int main() {
 	gpioInitialise();
+	youdan.Init(16, 20, 4);
 	servo.SetServo(19, 26);
 	servo.MoveServo(0+SERVO_OFFSET_1, 0+SERVO_OFFSET_2);
 	//while(1){}
@@ -93,8 +101,25 @@ int main() {
 	pid1.Init(P_GAIN_1, I_GAIN_1, D_GAIN_1);
 	pid2.Init(P_GAIN_2, I_GAIN_2, D_GAIN_2);
 
+	while (1) {
+		bno.AttitudeDeterminate();
+		if (youdan.DetectOpenParachute()) {
+			break;
+		}
+	}
+
+	fp = fopen("/home/pi/BBM/ADC/LogDataBallon.csv", "w");
+
 	while(1) {
 		gpioSetTimerFunc(0, CONTROL_RATE, func);
+
+		// in case collected in MISSION_TIME[sec]
+		if (gpioRead(16) == 0){
+			fclose(fp);
+			gpioSetTimerFunc(0, CONTROL_RATE, NULL);
+			cout << "flight pin on" << endl;
+			break;
+		}
 	}
 }
 
@@ -139,8 +164,15 @@ void func() {
 	if (abs(gyro_z) > MODE_CONDITION_UPPER) {
 		mode = 0;
 		pid2.IerrorReset();
+		mode_count = 0;
 	} else if (abs(gyro_z) < MODE_CONDITION_LOWER) {
-		mode = 1;
+		mode_count++;
+		if (mode_count > (MODE_PERIOD_CONDITION/(CONTROL_RATE/1000))) {
+			mode = 1;
+			mode_count = 0;
+		}
+	} else {
+		mode_count = 0;
 	}
 
 	/* control */
@@ -223,4 +255,5 @@ void func() {
 	pregyro = gyro_z;
 	preangle = raw_angle;
 
+	fprintf(fp, "%f,%f,%f,%f,%d,%d,\r\n", freq, raw_angle, angle, gyro_z, mode, (int)paddledegree);
 }

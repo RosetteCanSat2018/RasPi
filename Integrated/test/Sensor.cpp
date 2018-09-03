@@ -97,9 +97,10 @@ void Sensor::GPSGetData_f(float data[2])
 		//return EXIT_FAILURE;
 	}
 	gps_stream(&gps_data, WATCH_ENABLE | WATCH_JSON, NULL);
-
+	int count = 0;
 	while (1)
 	{
+
 		/* wait for 2 seconds to receive data */
 		if (gps_waiting(&gps_data, 2000000))
 		{
@@ -124,9 +125,7 @@ void Sensor::GPSGetData_f(float data[2])
 				}
 				else
 				{
-<<<<<<< HEAD
 					printf("no GPS data available\n");
-=======
 
 					//printf("no GPS data available\n");
 
@@ -134,15 +133,14 @@ void Sensor::GPSGetData_f(float data[2])
 					//if (count == 5) { break; }
 
 					//count++;
-					
->>>>>>> 13db00cfe563919b91dc1ac96d34669cea16280b
+
 				}
 			}
 		}
 		count++;
-		if (count == 5) { 
+		if (count == 5) {
 			cout << "not GPS data" << endl;
-			break; 
+			break;
 		}
 	}
 }
