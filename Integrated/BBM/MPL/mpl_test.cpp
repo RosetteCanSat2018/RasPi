@@ -6,6 +6,7 @@
 #include <stdio.h>
 
 #define TIMER 10
+#define SEA_LEVEL_PRESSURE 1008.4 // [hPa]
 
 Sensor sensor;
 
@@ -14,7 +15,7 @@ using namespace std;
 double alt;
 int s1, s2, m1, m2;
 
-FILE *fp;
+//FILE *fp;
 
 void data();
 
@@ -23,7 +24,7 @@ int main()
 	gpioInitialise();
 	sensor.mplSetConfig();
 
-	fp = fopen("/home/pi/BBM/Sensor/sensorlog.csv", "w");
+	//fp = fopen("/home/pi/BBM/Sensor/sensorlog.csv", "w");
 	gpioTime(0, &s1, &m1);
 	fprintf(fp, "%d.%03d seconds\r\n", s1, m1 / 1000);
 	while (1)
@@ -34,14 +35,14 @@ int main()
 			break;
 		}
 	}
-	fprintf(fp, "%d.%03d seconds\r\n", s2, m2 / 1000);
-	fclose(fp);
+	//fprintf(fp, "%d.%03d seconds\r\n", s2, m2 / 1000);
+	//fclose(fp);
 	sensor.pigpioStop();
 }
 
 void data()
 {
-	alt = sensor.mplGetALT(1007.0); //hPa(海面気圧の代入）
+	alt = sensor.mplGetALT(SEA_LEVEL_PRESSURE); //hPa(海面気圧の代入）
 	cout << alt << endl;
 	gpioTime(0, &s2, &m2);
 }

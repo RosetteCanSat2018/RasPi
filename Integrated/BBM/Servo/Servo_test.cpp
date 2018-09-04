@@ -9,7 +9,7 @@ using namespace std;
 int main()
 {
 	gpioInitialise();
-	servo.SetServo();
+	servo.SetServo(19, 26);
 	for (int i = 0; i < 10; i++)
 	{
 		servo.MoveServo(0);
