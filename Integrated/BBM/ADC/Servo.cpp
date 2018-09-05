@@ -14,7 +14,7 @@ void Servo::SetServo(unsigned int _servo1_gpio, unsigned int _servo2_gpio)
 	gpioSetMode(servo2_gpio, 1);
 }
 
-void Servo::MoveServo(int paddledegree1, int paddledegree2)
+void Servo::MoveServo(double paddledegree1, double paddledegree2)
 {
 	double pulsewidth1 = 1500 + paddledegree1 * 500 / 60; // +60deg:2ms, -60deg:1ms, +90deg:2.3ms, -90deg:0.7ms
 	gpioServo(servo1_gpio, pulsewidth1);//frequency:50Hz

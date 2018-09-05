@@ -12,11 +12,11 @@
 using namespace std;
 
 #define CONTROL_RATE 10.0 // [millisec]
-#define SERVO_OFFSET_1 6
+#define SERVO_OFFSET_1 9
 #define SERVO_OFFSET_2 1
 
 // for mode switch
-#define MODE_CONDITION_UPPER 150.0 // [deg/sec]
+#define MODE_CONDITION_UPPER 120.0 // [deg/sec]
 #define MODE_CONDITION_LOWER 20.0 // [deg/sec]
 #define MODE_PERIOD_CONDITION 2.0 // [sec], mode0 >> mode1
 
@@ -28,15 +28,18 @@ using namespace std;
 #define MAX_PADDLE_DEGREE_1 20.0
 
 /* for mode 1, PI control */
-#define P_GAIN_2 50.0
-#define I_GAIN_2 0.1
-#define D_GAIN_2 70.0
-#define SATURATION_2 10000.0
-#define MAX_PADDLE_DEGREE_2 10.0
+#define P_GAIN_2 500.0
+#define I_GAIN_2 0.3
+#define D_GAIN_2 100000
+#define SATURATION_2 100000.0
+#define MAX_PADDLE_DEGREE_2 7.0
 
-#define DEGREE_CONDITION 15.0
+/* for success criteria */
+#define FULL_DEGREE_CONDITION 30.0
+#define ADVANCED_DEGREE_CONDITION 10.0
 #define PERIOD_CONDITION 10.0
 
+#define FULL_ACHIEVE_TIMES 2 //full to advanced
 
 Adafruit_BNO055 bno = Adafruit_BNO055();
 Servo servo;
@@ -66,7 +69,8 @@ int noise_count = 0;
 int calibration_count = 0;
 int noise_flag = 0;
 
-int i_error_reset_count = 0;
+int full_i_error_reset_count = 0;
+int advanced_i_error_reset_count = 0;
 
 int mode_count = 0;
 
@@ -74,6 +78,10 @@ int s1 = 0;
 int m1 = 0;
 int s2, m2, i;
 double freq;
+
+int full_success = 0;
+int advanced_success = 0;
+
 
 FILE *fp;
 
@@ -108,7 +116,7 @@ int main() {
 		}
 	}
 
-	fp = fopen("/home/pi/BBM/ADC/LogDataBallon.csv", "w");
+	//fp = fopen("/home/pi/ADC/LogDataBallon.csv", "w");
 
 	while(1) {
 		gpioSetTimerFunc(0, CONTROL_RATE, func);
@@ -169,6 +177,8 @@ void func() {
 		mode_count++;
 		if (mode_count > (MODE_PERIOD_CONDITION/(CONTROL_RATE/1000))) {
 			mode = 1;
+			p_flag = 0;
+			n_flag = 0;
 			mode_count = 0;
 		}
 	} else {
@@ -228,14 +238,30 @@ void func() {
 		pid2.UpdateError(error);
 		totalerror = pid2.TotalError();
 
-		if (-DEGREE_CONDITION < error && error < DEGREE_CONDITION) {
-	  	  i_error_reset_count++;
-	  	  if (i_error_reset_count > (PERIOD_CONDITION/(CONTROL_RATE/1000))) {
-	  		  pid2.IerrorReset();
-	  		  i_error_reset_count = 0;
+
+		if (-FULL_DEGREE_CONDITION < error && error < FULL_DEGREE_CONDITION) {
+	  	  full_i_error_reset_count++;
+	  	  if (full_i_error_reset_count > (PERIOD_CONDITION/(CONTROL_RATE/1000))) {
+			  full_i_error_reset_count = 0;
+			  full_success++;
+	  	  }
+	    } else{
+  	  		  full_i_error_reset_count = 0;
+	    }
+
+		if (full_success < FULL_ACHIEVE_TIMES && -FULL_DEGREE_CONDITION < error && error < FULL_DEGREE_CONDITION && !(-ADVANCED_DEGREE_CONDITION < error && error < ADVANCED_DEGREE_CONDITION)) {
+			pid2.IerrorReset();
+		}
+
+		if (-ADVANCED_DEGREE_CONDITION < error && error < ADVANCED_DEGREE_CONDITION) {
+	  	  advanced_i_error_reset_count++;
+	  	  if (advanced_i_error_reset_count > (PERIOD_CONDITION/(CONTROL_RATE/1000))) {
+	  		  //pid2.IerrorReset();
+	  		  advanced_i_error_reset_count = 0;
+			  advanced_success++;
 	  	  }
 	    } else {
-	  	  i_error_reset_count = 0;
+	  	    advanced_i_error_reset_count = 0;
 	    }
 
 		if (totalerror > SATURATION_2) {
@@ -247,13 +273,14 @@ void func() {
 		}
 
 		cout.setf(ios::left, ios::adjustfield);
-		cout << setw(8) << preangle << "\t" << setw(8) << raw_angle << "\t" << setw(8) << angle << "\t" << setw(8) <<  totalerror << "\t" << setw(5) << (int)paddledegree << "\t" << setw(5) <<  i_error_reset_count << "\t" << mode << endl;
+		cout << setw(8) << preangle << "\t" << setw(8) << raw_angle << "\t" << setw(8) << angle << "\t" << setw(8) <<  totalerror << "\t" << setw(5) << paddledegree << "\t" << setw(5) <<  full_i_error_reset_count << "\t" << advanced_i_error_reset_count << "\t" << mode << "\t" << full_success << "\t" << advanced_success << endl;
 
-		servo.MoveServo((int)paddledegree + SERVO_OFFSET_1, (int)paddledegree + SERVO_OFFSET_2);
+		servo.MoveServo(paddledegree + SERVO_OFFSET_1, paddledegree + SERVO_OFFSET_2);
 	}
 
 	pregyro = gyro_z;
 	preangle = raw_angle;
 
-	fprintf(fp, "%f,%f,%f,%f,%d,%d,\r\n", freq, raw_angle, angle, gyro_z, mode, (int)paddledegree);
+	//fprintf(fp, "%f,%f,%f,%f,%d,%f,%d,%d,%d,%d \r\n", freq, raw_angle, angle, gyro_z, mode, paddledegree, full_i_error_reset_count, advanced_i_error_reset_count, full_success, advanced_success);
+
 }

@@ -23,9 +23,14 @@ void Youdan::Init(int _read_signal, int _write_signal, int _signal_to_FET)
 
 int Youdan::DetectOpenParachute()
 {
-	cout << gpioRead(read_signal) << endl;
-	if (gpioRead(read_signal)){return 1;}
-	else{return 0;}
+	if (gpioRead(read_signal)){
+		cout << gpioRead(read_signal) << endl;
+		return 1;
+	}
+	else{
+		cout << gpioRead(read_signal) << endl;
+		return 0;
+	}
 }
 
 void Youdan::escape_program(int sig){
@@ -34,26 +39,15 @@ void Youdan::escape_program(int sig){
 	exit(1);
 }
 
-void Youdan::HeatNichrome(unsigned int waittime,unsigned int looptime, unsigned int loopnumber)
+void Youdan::HeatNichrome(unsigned int waittime,unsigned int looptime)
 {
-	int number = 0;
-		while (number < loopnumber)
-		{
-			cout << 1 << endl;
 
-			gpioWrite(signal_to_FET, 1);
+	gpioWrite(signal_to_FET, 1);
 
-			usleep(waittime);
+	usleep(waittime);
 
-			gpioWrite(signal_to_FET, 0);
+	gpioWrite(signal_to_FET, 0);
 
-			usleep(looptime);
+	usleep(looptime);
 
-			number++;
-
-			signal(SIGINT, escape_program);
-
-		}
-
-gpioWrite(signal_to_FET, 0);
 }

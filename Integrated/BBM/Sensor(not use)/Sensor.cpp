@@ -16,13 +16,13 @@
 
 //Config------------------------------------------------------------------------------------------------------------------
 //MPL3115A2
-	void Sensor::mplSetConfig()
-	{
-		MPL3115A2_i2c = i2cOpen(1, MPL3115A2_ADDRS, 0);
-		i2cWriteWordData(MPL3115A2_i2c, 0x26, 0xB8); //Active mode, OSR = 10, Altimeter mode
-		i2cWriteWordData(MPL3115A2_i2c, 0x13, 0x07); //Data ready event enabled for altitude, pressure, temperature
-		i2cWriteWordData(MPL3115A2_i2c, 0x26, 0x01); //Data ready event enabled for altitude, pressure, temperature
-	}
+void Sensor::mplSetConfig()
+{
+	MPL3115A2_i2c = i2cOpen(1, MPL3115A2_ADDRS, 0);
+	i2cWriteWordData(MPL3115A2_i2c, 0x26, 0xB8); //Active mode, OSR = 10, Altimeter mode
+	i2cWriteWordData(MPL3115A2_i2c, 0x13, 0x07); //Data ready event enabled for altitude, pressure, temperature
+	i2cWriteWordData(MPL3115A2_i2c, 0x26, 0x01); //Data ready event enabled for altitude, pressure, temperature
+}
 //getData------------------------------------------------------------------------------------------------------------------
 //MPL3115A2
 double Sensor::mplGetALT(double sea_pressure)
@@ -33,13 +33,12 @@ double Sensor::mplGetALT(double sea_pressure)
 	double pressure = (pres / 4.0) / 100.0;
 	int temp = ((data[4] * 256) + (data[5] & 0xF0)) / 16;
 	float cTemp = (temp / 16.0);
-	double alt = ((pow((sea_pressure / pressure), (1 / 5.257)) - 1)*(cTemp + 273.15)) / 0.0065;
+	double alt = ((pow((sea_pressure / pressure ), (1 / 5.257)) - 1)*(cTemp + 273.15)) / 0.0065;
 	return alt;
 }
 //GPS
 void Sensor::GPSGetData(char c_data[2])
 {
-	GPS_handle = serOpen("/dev/ttyS0", 9600, 0);
 	float data[2];
 	string s_data;
 	//struct timeval tv;
@@ -73,10 +72,10 @@ void Sensor::GPSGetData(char c_data[2])
 					//printf("latitude: %f, longitude: %f", gps_data.fix.latitude, gps_data.fix.longitude); //EDIT: Replaced tv.tv_sec with gps_data.fix.time
 					data[0] = gps_data.fix.latitude;
 					data[1] = gps_data.fix.longitude;
-					for(int i=0; i<2; i++){
-					s_data = to_string(data[i]);
-					s_data.copy(c_data,2);
-				}
+					for (int i = 0; i<2; i++) {
+						s_data = to_string(data[i]);
+						s_data.copy(c_data, 2);
+					}
 				}
 				else
 				{
@@ -86,12 +85,11 @@ void Sensor::GPSGetData(char c_data[2])
 		}
 	}
 	//return 0;
-	serClose(GPS_handle);
 }
 
 void Sensor::GPSGetData_f(float data[2])
 {
-	GPS_handle = serOpen("/dev/ttyS0", 9600, 0);
+	int count = 0;
 	//struct timeval tv;
 	struct gps_data_t gps_data;
 	if ((rc = gps_open("localhost", "2947", &gps_data)) == -1)
@@ -100,8 +98,6 @@ void Sensor::GPSGetData_f(float data[2])
 		//return EXIT_FAILURE;
 	}
 	gps_stream(&gps_data, WATCH_ENABLE | WATCH_JSON, NULL);
-
-	int count = 0;
 
 	while (1)
 	{
@@ -112,7 +108,6 @@ void Sensor::GPSGetData_f(float data[2])
 			if ((rc = gps_read(&gps_data)) == -1)
 			{
 				printf("error occured reading gps data. code: %d, reason: %s\n", rc, gps_errstr(rc));
-
 			}
 			else
 			{
@@ -130,17 +125,26 @@ void Sensor::GPSGetData_f(float data[2])
 				}
 				else
 				{
-					
+					printf("no GPS data available\n");
+
 					//printf("no GPS data available\n");
 
-					//if(count == 5){break;}
+					//cout << count << endl;
+					//if (count == 5) { break; }
 
 					//count++;
+
 				}
 			}
 		}
+		count++;
+		if (count == 4) {
+			data[0] = 0.0;
+			data[1] = 1.1;
+			cout << "not GPS data" << endl;
+			break;
+		}
 	}
-	serClose(GPS_handle);
 }
 //Finish----------------------------------------------------------------------------------------------------------------------------------------------------------
 void Sensor::pigpioStop()
