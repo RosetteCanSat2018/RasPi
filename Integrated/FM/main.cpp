@@ -22,7 +22,7 @@
 #define SERVO_OFFSET_1 9
 #define SERVO_OFFSET_2 1
 #define HEAT_PERIOD 1 // [msec]
-#define HEAT_CYCLE 130 //[msec]
+#define HEAT_CYCLE 90 //[msec]
 #define HEAT_LOOP 50 //50 //HEAT_PERIOD + HEAT_CYCLE [msec/LOOP]
 #define SEA_LEVEL_PRESSURE 1008.4 // [hPa]
 #define GPS_SEND_RATE 120 // [sec]
@@ -40,7 +40,7 @@
 #define I_GAIN_1 0
 #define D_GAIN_1 70.0
 #define SATURATION_1 5000.0
-#define MAX_PADDLE_DEGREE_1 20.0
+#define MAX_PADDLE_DEGREE_1 30.0//20.0
 
 /* for mode 1, PID control */
 #define P_GAIN_2 500.0
@@ -89,6 +89,8 @@ float GPS[2];
 double alt;
 
 int LoopNum1 = 0;
+
+int flightpin_count = 0;
 
 /* for ADC */
 double gyro_z;
@@ -180,13 +182,19 @@ int main() {
 		signal(SIGINT, escape_program);
 
 		// in case collected in MISSION_TIME[sec]
-		linaccel = pow(linear_accel.x(), 2) + pow(linear_accel.y(), 2) + pow(linear_accel.z(), 2);
-		if (gpioRead(16) == 0 && linaccel < 0.3){
-			fclose(fp);
-			gpioWrite(22, 1); // Green LED ON
-			gpioSetTimerFunc(0, CONTROL_RATE, NULL);
-			cout << "flight pin on" << endl;
-			break;
+		//linaccel = pow(linear_accel.x(), 2) + pow(linear_accel.y(), 2) + pow(linear_accel.z(), 2);
+		//if (gpioRead(16) == 0 && linaccel < 0.3){
+		if (gpioRead(16) == 0){
+			flightpin_count++;
+			if (flightpin_count > 100) {
+				fclose(fp);
+				gpioWrite(22, 1); // Green LED ON
+				gpioSetTimerFunc(0, CONTROL_RATE, NULL);
+				cout << "flight pin on" << endl;
+				break;
+			}
+		} else {
+			flightpin_count = 0;
 		}
 	}
 }
